@@ -22,7 +22,9 @@ export const sendMessageToGemini = async (
   userMessage: string
 ): Promise<string> => {
   try {
-    const apiKey = process.env.API_KEY;
+    // Safely check for process.env availability
+    const apiKey = (typeof process !== 'undefined' && process.env) ? process.env.API_KEY : undefined;
+    
     if (!apiKey) {
       return "I'm currently in demo mode (no API key configured). Please contact Tadios directly!";
     }
@@ -39,7 +41,7 @@ export const sendMessageToGemini = async (
     });
 
     const result = await chat.sendMessage({ message: userMessage });
-    return result.text;
+    return result.text || "I didn't get a response. Please try again.";
   } catch (error) {
     console.error("Gemini API Error:", error);
     return "I'm having trouble connecting to my brain right now. Please try again later or email Tadios directly.";
