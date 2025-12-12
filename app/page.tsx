@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { 
   Bot, 
   Workflow, 
@@ -27,15 +27,17 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
-// Adjust import paths for Next.js app/ directory structure
+// Eager imports for above-the-fold content
 import ToolsCarousel from '../components/ToolsCarousel';
-import WorkflowDiagram from '../components/WorkflowDiagram';
-import TestimonialCarousel from '../components/TestimonialCarousel';
-import RAGArchitecture from '../components/RAGArchitecture';
 import ParticleBackground from '../components/ParticleBackground';
 import IntegrationHub from '../components/IntegrationHub';
 import ContactForm from '../components/ContactForm';
 import { ServiceItem, WorkflowItem, ProcessStep, TestimonialItem } from '../types';
+
+// Lazy imports for below-the-fold heavy components
+const WorkflowDiagram = lazy(() => import('../components/WorkflowDiagram'));
+const RAGArchitecture = lazy(() => import('../components/RAGArchitecture'));
+const TestimonialCarousel = lazy(() => import('../components/TestimonialCarousel'));
 
 // --- DATA DEFINITIONS ---
 
@@ -245,6 +247,11 @@ const Reveal: React.FC<{ children: React.ReactNode; className?: string; delay?: 
     </div>
   );
 };
+
+// --- LOADING SKELETONS ---
+const LoadingSkeleton = ({ className }: { className: string }) => (
+  <div className={`animate-pulse bg-slate-200 dark:bg-slate-800 rounded-2xl ${className}`}></div>
+);
 
 // --- HOME PAGE COMPONENT ---
 
@@ -630,7 +637,9 @@ export default function Home() {
               </div>
 
               <div className="relative z-10 min-h-[400px] md:min-h-[500px] bg-[#0f1115] rounded-xl border border-slate-800/50 flex items-center justify-center overflow-auto custom-scrollbar">
-                <WorkflowDiagram steps={activeWorkflow.steps} />
+                <Suspense fallback={<LoadingSkeleton className="w-full h-full min-h-[400px]" />}>
+                  <WorkflowDiagram steps={activeWorkflow.steps} />
+                </Suspense>
               </div>
 
               <div className="relative z-10 mt-6 flex items-center justify-between px-4 py-3 bg-[#1e2029] rounded-lg border border-slate-800">
@@ -689,7 +698,9 @@ export default function Home() {
                 
                 <div className="w-full lg:w-1/2">
                    <Reveal delay={200}>
-                      <RAGArchitecture />
+                      <Suspense fallback={<LoadingSkeleton className="w-full h-[300px]" />}>
+                        <RAGArchitecture />
+                      </Suspense>
                    </Reveal>
                 </div>
              </div>
@@ -750,7 +761,9 @@ export default function Home() {
            <div className="container mx-auto px-6 mb-12 text-center">
               <h2 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">What Clients Say</h2>
            </div>
-           <TestimonialCarousel testimonials={testimonials} />
+           <Suspense fallback={<LoadingSkeleton className="w-full h-48" />}>
+             <TestimonialCarousel testimonials={testimonials} />
+           </Suspense>
         </section>
 
         {/* Contact */}
